@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { startOfMonth } from "date-fns";
 import {
   BarChart,
@@ -22,6 +23,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import axios from "axios";
+import { Button } from "@/components/ui/button";
 
 interface TeamPerformance {
   name: string;
@@ -74,6 +76,7 @@ const teamUrls = [
 ];
 
 export default function EnhancedCEODashboard() {
+   const router = useRouter();
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData>({
     weeklyRuleBreaks: [],
     monthlyRuleBreaks: [],
@@ -199,9 +202,15 @@ export default function EnhancedCEODashboard() {
 
   return (
     <div className="container mx-auto p-4 space-y-6">
-      <h1 className="text-4xl font-bold mb-6">
-        Enhanced CEO Analytics Dashboard
-      </h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold">Baratheon-Builders Dashboard</h1>
+        <Button
+          className="bg-black text-white hover:bg-gray-800"
+          onClick={() => router.push("/login")}
+        >
+          Logout
+        </Button>
+      </div>
 
       <div className="grid grid-cols-4 gap-4 mb-6">
         <Card>

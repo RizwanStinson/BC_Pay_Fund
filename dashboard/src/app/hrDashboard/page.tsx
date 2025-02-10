@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, AlertTriangle, DollarSign } from "lucide-react";
 import axios from "axios";
+import { Button } from "@/components/ui/button";
 
 interface TeamData {
   name: string;
@@ -20,9 +22,9 @@ interface ApiEntry {
 }
 
 export default function HRDashboard() {
+  const router = useRouter();
   const [teamData, setTeamData] = useState<TeamData[]>([]);
 
-  // Use useMemo to prevent teamUrls from changing on every render
   const teamUrls = useMemo(
     () => [
       "https://fund-json.onrender.com/Stark-Coders",
@@ -85,11 +87,19 @@ export default function HRDashboard() {
     };
 
     fetchAllTeamData();
-  }, [teamUrls]); // teamUrls is now memoized, so it won't trigger unnecessary re-renders
+  }, [teamUrls]); 
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6">HR Team Performance Dashboard</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold">HR Dashboard</h1>
+        <Button
+          className="bg-black text-white hover:bg-gray-800"
+          onClick={() => router.push("/login")}
+        >
+          Logout
+        </Button>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {teamData.map((team, index) => (
           <Card key={index}>
