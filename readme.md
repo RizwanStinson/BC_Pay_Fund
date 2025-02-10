@@ -3,7 +3,7 @@
 A modern web-based solution for managing company rule violations with a twist! Transform workplace discipline into team bonding through an innovative "Benevolent Contribution" system.
 
 ## 🌟 Live Demo
-Check out the live application at [Live Link](bc-pay-fund.vercel.app)
+Check out the live application at [Live Link](https://bc-pay-fund.vercel.app)
 
 ## 🎨 Design
 View the UI/UX design on [Figma](https://www.figma.com/design/kC4qqFyzO4zZKFgHYNBym1/Untitled?node-id=1-619&t=k2PinFUWoMxlTkwZ-0)
