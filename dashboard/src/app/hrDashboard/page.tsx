@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, AlertTriangle, DollarSign } from "lucide-react";
 import axios from "axios";
@@ -22,15 +22,18 @@ interface ApiEntry {
 export default function HRDashboard() {
   const [teamData, setTeamData] = useState<TeamData[]>([]);
 
-  // Moved teamUrls inside the component to make it available in the dependency array
-  const teamUrls = [
-    "https://fund-json.onrender.com/Stark-Coders",
-    "https://fund-json.onrender.com/Lannister-Logic-Lords",
-    "https://fund-json.onrender.com/Targaryen-Debuggers",
-    "https://fund-json.onrender.com/Baratheon-Builders",
-    "https://fund-json.onrender.com/Tyrell-Technocrats",
-    "https://fund-json.onrender.com/Martell-Mavericks",
-  ];
+  // Use useMemo to prevent teamUrls from changing on every render
+  const teamUrls = useMemo(
+    () => [
+      "https://fund-json.onrender.com/Stark-Coders",
+      "https://fund-json.onrender.com/Lannister-Logic-Lords",
+      "https://fund-json.onrender.com/Targaryen-Debuggers",
+      "https://fund-json.onrender.com/Baratheon-Builders",
+      "https://fund-json.onrender.com/Tyrell-Technocrats",
+      "https://fund-json.onrender.com/Martell-Mavericks",
+    ],
+    []
+  );
 
   const fetchTeamData = async (url: string): Promise<TeamData> => {
     try {
@@ -82,7 +85,7 @@ export default function HRDashboard() {
     };
 
     fetchAllTeamData();
-  }, [teamUrls]); // Added teamUrls to the dependency array
+  }, [teamUrls]); // teamUrls is now memoized, so it won't trigger unnecessary re-renders
 
   return (
     <div className="container mx-auto p-4">
