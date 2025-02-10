@@ -195,7 +195,7 @@ export default function EnhancedCEODashboard() {
     };
 
     computeAnalytics(); //  Call the function 
-  }, [teamUrls]); // Dependencies remain unchanged
+  }, []); // Dependencies remain unchanged
 
   return (
     <div className="container mx-auto p-4 space-y-6">
