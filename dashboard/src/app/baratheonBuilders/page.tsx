@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
@@ -119,87 +119,79 @@ export default function Dashboard() {
   };
 
   //change here  
-
-  const fetchData = async () => {
-    try {
-      const response = await axios.get(
-        "https://fund-json.onrender.com/Baratheon-Builders"
-      );
-
-      const data = response.data;
-
-      const groupedData: {
-        [key: string]: { rulesBroken: number; amount: number };
-      } = {};
-
-      data.forEach(({ name, amount }: { name: string; amount: number }) => {
-        if (!groupedData[name]) {
-          groupedData[name] = { rulesBroken: 0, amount: 0 };
-        }
-        groupedData[name].rulesBroken += 1;
-        groupedData[name].amount += amount;
-      });
-
-
-//change here 
-
-     const initialMembers = [
-       "Liam",
-       "Olivia",
-       "Noah",
-       "Emma",
-       "Mason",
-       "Sophia",
-       "Lucas",
-     ];
-
-
-      const formattedData = initialMembers.map((member) => ({
-        member,
-        rulesBroken: groupedData[member]?.rulesBroken || 0,
-        amount: groupedData[member]?.amount || 0,
-      }));
-
-      setViolations(formattedData);
-
-      const sortedRecords = response.data
-        .sort(
-          (a: IViolation, b: IViolation) =>
-            new Date(b.date).getTime() - new Date(a.date).getTime()
-        )
-        .slice(0, 6);
-
-      setRecords(sortedRecords);
-
-      if (Array.isArray(response.data)) {
-        let totalAmount = 0;
-        const ruleFrequency: { [key: string]: number } = {};
-        let totalRuleBreaks = 0;
-
-        response.data.forEach(({ amount, rule_broken }: IViolation) => {
-          totalAmount += Number(amount);
-          ruleFrequency[rule_broken] = (ruleFrequency[rule_broken] || 0) + 1;
-        });
-
-        totalRuleBreaks = Object.values(ruleFrequency).reduce(
-          (acc, curr) => acc + curr,
-          0
-        );
-
-        setAmountTotal(totalAmount);
-        setTotalRuleBreaks(totalRuleBreaks);
+  
+const fetchData = useCallback(async () => {
+  try {
+    const response = await axios.get(
+      "https://fund-json.onrender.com/Lannister-Logic-Lords"
+    );
+    const data = response.data;
+    const groupedData: {
+      [key: string]: { rulesBroken: number; amount: number };
+    } = {};
+    data.forEach(({ name, amount }: { name: string; amount: number }) => {
+      if (!groupedData[name]) {
+        groupedData[name] = { rulesBroken: 0, amount: 0 };
       }
+      groupedData[name].rulesBroken += 1;
+      groupedData[name].amount += amount;
+    });
 
-      const teamComparisonData = await Promise.all(teamUrls.map(fetchTeamData));
-      setTeamComparison(teamComparisonData);
-    } catch (error) {
-      console.error("Error fetching data:", error);
+    const initialMembers = [
+      "Ethan",
+      "Ava",
+      "James",
+      "Isabella",
+      "Benjamin",
+      "Mia",
+      "Alexander",
+      "Charlotte",
+      "Daniel",
+      "Amelia",
+      "Matthew",
+    ];
+    const formattedData = initialMembers.map((member) => ({
+      member,
+      rulesBroken: groupedData[member]?.rulesBroken || 0,
+      amount: groupedData[member]?.amount || 0,
+    }));
+    setViolations(formattedData);
+
+    const sortedRecords = response.data
+      .sort(
+        (a: IViolation, b: IViolation) =>
+          new Date(b.date).getTime() - new Date(a.date).getTime()
+      )
+      .slice(0, 6);
+    setRecords(sortedRecords);
+
+    if (Array.isArray(response.data)) {
+      let totalAmount = 0;
+      const ruleFrequency: { [key: string]: number } = {};
+      let totalRuleBreaks = 0;
+      response.data.forEach(({ amount, rule_broken }: IViolation) => {
+        totalAmount += Number(amount);
+        ruleFrequency[rule_broken] = (ruleFrequency[rule_broken] || 0) + 1;
+      });
+      totalRuleBreaks = Object.values(ruleFrequency).reduce(
+        (acc, curr) => acc + curr,
+        0
+      );
+      setAmountTotal(totalAmount);
+      setTotalRuleBreaks(totalRuleBreaks);
     }
-  };
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    const teamComparisonData = await Promise.all(teamUrls.map(fetchTeamData));
+    setTeamComparison(teamComparisonData);
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
+}, [teamUrls, fetchTeamData]);
+
+useEffect(() => {
+  fetchData();
+}, [fetchData]);
+
 
   const violationsPerMember = useMemo(
     () =>
