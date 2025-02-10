@@ -13,9 +13,16 @@ interface TeamData {
   topRuleBreaker: string;
 }
 
+interface ApiEntry {
+  amount: number;
+  rule_broken: string;
+  name: string;
+}
+
 export default function HRDashboard() {
   const [teamData, setTeamData] = useState<TeamData[]>([]);
 
+  // Moved teamUrls inside the component to make it available in the dependency array
   const teamUrls = [
     "https://fund-json.onrender.com/Stark-Coders",
     "https://fund-json.onrender.com/Lannister-Logic-Lords",
@@ -25,16 +32,16 @@ export default function HRDashboard() {
     "https://fund-json.onrender.com/Martell-Mavericks",
   ];
 
-  const fetchTeamData = async (url: string) => {
+  const fetchTeamData = async (url: string): Promise<TeamData> => {
     try {
-      const response = await axios.get(url);
+      const response = await axios.get<ApiEntry[]>(url);
       const data = response.data;
 
       const ruleFrequency: { [key: string]: number } = {};
       const memberRuleBreaks: { [key: string]: number } = {};
       let totalAmount = 0;
 
-      data.forEach((entry: any) => {
+      data.forEach((entry: ApiEntry) => {
         totalAmount += entry.amount;
         ruleFrequency[entry.rule_broken] =
           (ruleFrequency[entry.rule_broken] || 0) + 1;
@@ -75,7 +82,7 @@ export default function HRDashboard() {
     };
 
     fetchAllTeamData();
-  }, []);
+  }, [teamUrls]); // Added teamUrls to the dependency array
 
   return (
     <div className="container mx-auto p-4">
@@ -92,7 +99,7 @@ export default function HRDashboard() {
                   <DollarSign className="h-5 w-5 mr-2" />
                   <span>Total Amount</span>
                 </div>
-                <span className="font-semibold">{team.totalAmount}</span>
+                <span className="font-semibold">${team.totalAmount}</span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
