@@ -175,7 +175,7 @@ export default function Dashboard() {
 
       if (Array.isArray(response.data)) {
         let totalAmount = 0;
-        let ruleFrequency: { [key: string]: number } = {};
+        const ruleFrequency: { [key: string]: number } = {};
         let totalRuleBreaks = 0;
 
         response.data.forEach(({ amount, rule_broken }: IViolation) => {
