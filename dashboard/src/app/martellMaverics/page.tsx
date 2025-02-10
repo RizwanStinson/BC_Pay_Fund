@@ -83,113 +83,118 @@ export default function Dashboard() {
   const [teamComparison, setTeamComparison] = useState<ITeamComparison[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const teamUrls = [
-    "https://fund-json.onrender.com/Stark-Coders",
-    "https://fund-json.onrender.com/Lannister-Logic-Lords",
-    "https://fund-json.onrender.com/Targaryen-Debuggers",
-    "https://fund-json.onrender.com/Baratheon-Builders",
-    "https://fund-json.onrender.com/Tyrell-Technocrats",
-    "https://fund-json.onrender.com/Martell-Mavericks",
-  ];
+  const teamUrls = useMemo(
+    () => [
+      "https://fund-json.onrender.com/Stark-Coders",
+      "https://fund-json.onrender.com/Lannister-Logic-Lords",
+      "https://fund-json.onrender.com/Targaryen-Debuggers",
+      "https://fund-json.onrender.com/Baratheon-Builders",
+      "https://fund-json.onrender.com/Tyrell-Technocrats",
+      "https://fund-json.onrender.com/Martell-Mavericks",
+    ],
+    []
+  );
 
-  const fetchTeamData = async (url: string): Promise<ITeamComparison> => {
-    try {
-      const response = await axios.get(url);
-      const data = response.data;
+  const fetchTeamData = useCallback(
+    async (url: string): Promise<ITeamComparison> => {
+      try {
+        const response = await axios.get(url);
+        const data = response.data;
 
-      let violations = 0;
-      let totalAmount = 0;
+        let violations = 0;
+        let totalAmount = 0;
 
-      data.forEach((entry: IViolation) => {
-        violations += 1;
-        totalAmount += entry.amount;
-      });
+        data.forEach((entry: IViolation) => {
+          violations += 1;
+          totalAmount += entry.amount;
+        });
 
-      const teamName = url.split("/").pop()?.replace(/-/g, " ") || "";
+        const teamName = url.split("/").pop()?.replace(/-/g, " ") || "";
 
-      return { name: teamName, violations, amount: totalAmount };
-    } catch (error) {
-      console.error(`Error fetching data for ${url}:`, error);
-      return {
-        name: url.split("/").pop()?.replace(/-/g, " ") || "",
-        violations: 0,
-        amount: 0,
-      };
-    }
-  };
-  
-const fetchData = useCallback(async () => {
-  try {
-    const response = await axios.get(
-      "https://fund-json.onrender.com/Lannister-Logic-Lords"
-    );
-    const data = response.data;
-    const groupedData: {
-      [key: string]: { rulesBroken: number; amount: number };
-    } = {};
-    data.forEach(({ name, amount }: { name: string; amount: number }) => {
-      if (!groupedData[name]) {
-        groupedData[name] = { rulesBroken: 0, amount: 0 };
+        return { name: teamName, violations, amount: totalAmount };
+      } catch (error) {
+        console.error(`Error fetching data for ${url}:`, error);
+        return {
+          name: url.split("/").pop()?.replace(/-/g, " ") || "",
+          violations: 0,
+          amount: 0,
+        };
       }
-      groupedData[name].rulesBroken += 1;
-      groupedData[name].amount += amount;
-    });
+    },
+    []
+  );
 
-    const initialMembers = [
-      "Ethan",
-      "Ava",
-      "James",
-      "Isabella",
-      "Benjamin",
-      "Mia",
-      "Alexander",
-      "Charlotte",
-      "Daniel",
-      "Amelia",
-      "Matthew",
-    ];
-    const formattedData = initialMembers.map((member) => ({
-      member,
-      rulesBroken: groupedData[member]?.rulesBroken || 0,
-      amount: groupedData[member]?.amount || 0,
-    }));
-    setViolations(formattedData);
-
-    const sortedRecords = response.data
-      .sort(
-        (a: IViolation, b: IViolation) =>
-          new Date(b.date).getTime() - new Date(a.date).getTime()
-      )
-      .slice(0, 6);
-    setRecords(sortedRecords);
-
-    if (Array.isArray(response.data)) {
-      let totalAmount = 0;
-      const ruleFrequency: { [key: string]: number } = {};
-      let totalRuleBreaks = 0;
-      response.data.forEach(({ amount, rule_broken }: IViolation) => {
-        totalAmount += Number(amount);
-        ruleFrequency[rule_broken] = (ruleFrequency[rule_broken] || 0) + 1;
-      });
-      totalRuleBreaks = Object.values(ruleFrequency).reduce(
-        (acc, curr) => acc + curr,
-        0
+  const fetchData = useCallback(async () => {
+    try {
+      const response = await axios.get(
+        "https://fund-json.onrender.com/Lannister-Logic-Lords"
       );
-      setAmountTotal(totalAmount);
-      setTotalRuleBreaks(totalRuleBreaks);
+      const data = response.data;
+      const groupedData: {
+        [key: string]: { rulesBroken: number; amount: number };
+      } = {};
+      data.forEach(({ name, amount }: { name: string; amount: number }) => {
+        if (!groupedData[name]) {
+          groupedData[name] = { rulesBroken: 0, amount: 0 };
+        }
+        groupedData[name].rulesBroken += 1;
+        groupedData[name].amount += amount;
+      });
+
+      const initialMembers = [
+        "Ethan",
+        "Ava",
+        "James",
+        "Isabella",
+        "Benjamin",
+        "Mia",
+        "Alexander",
+        "Charlotte",
+        "Daniel",
+        "Amelia",
+        "Matthew",
+      ];
+      const formattedData = initialMembers.map((member) => ({
+        member,
+        rulesBroken: groupedData[member]?.rulesBroken || 0,
+        amount: groupedData[member]?.amount || 0,
+      }));
+      setViolations(formattedData);
+
+      const sortedRecords = response.data
+        .sort(
+          (a: IViolation, b: IViolation) =>
+            new Date(b.date).getTime() - new Date(a.date).getTime()
+        )
+        .slice(0, 6);
+      setRecords(sortedRecords);
+
+      if (Array.isArray(response.data)) {
+        let totalAmount = 0;
+        const ruleFrequency: { [key: string]: number } = {};
+        let totalRuleBreaks = 0;
+        response.data.forEach(({ amount, rule_broken }: IViolation) => {
+          totalAmount += Number(amount);
+          ruleFrequency[rule_broken] = (ruleFrequency[rule_broken] || 0) + 1;
+        });
+        totalRuleBreaks = Object.values(ruleFrequency).reduce(
+          (acc, curr) => acc + curr,
+          0
+        );
+        setAmountTotal(totalAmount);
+        setTotalRuleBreaks(totalRuleBreaks);
+      }
+
+      const teamComparisonData = await Promise.all(teamUrls.map(fetchTeamData));
+      setTeamComparison(teamComparisonData);
+    } catch (error) {
+      console.error("Error fetching data:", error);
     }
+  }, [teamUrls, fetchTeamData]);
 
-    const teamComparisonData = await Promise.all(teamUrls.map(fetchTeamData));
-    setTeamComparison(teamComparisonData);
-  } catch (error) {
-    console.error("Error fetching data:", error);
-  }
-}, [teamUrls, fetchTeamData]);
-
-useEffect(() => {
-  fetchData();
-}, [fetchData]);
-
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const violationsPerMember = useMemo(
     () =>
@@ -204,17 +209,17 @@ useEffect(() => {
     [teamComparison]
   );
 
-  const postData = {
-    name: selectedMember,
-    rule_broken: selectedRule?.description || "",
-    amount: selectedRule?.amount || 0,
-    date: date ? format(date, "yyyy-MM-dd") : "",
-  };
+  const handlePost = useCallback(async () => {
+    const postData = {
+      name: selectedMember,
+      rule_broken: selectedRule?.description || "",
+      amount: selectedRule?.amount || 0,
+      date: date ? format(date, "yyyy-MM-dd") : "",
+    };
 
-  const handlePost = async () => {
     try {
       await axios.post(
-        "https://fund-json.onrender.com/Martell-Mavericks",
+        "https://fund-json.onrender.com/Tyrell-Technocrats",
         postData
       );
       fetchData();
@@ -222,12 +227,12 @@ useEffect(() => {
     } catch (error) {
       console.error("Error posting data:", error);
     }
-  };
+  }, [selectedMember, selectedRule, date, fetchData]);
 
   return (
     <div className="container mx-auto p-4">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Martell Mavericks Dashboard</h1>
+        <h1 className="text-3xl font-bold">Tyrell Technocrats Dashboard</h1>
         <Button
           className="bg-black text-white hover:bg-gray-800"
           onClick={() => router.push("/login")}
@@ -268,7 +273,7 @@ useEffect(() => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {teams.find((t) => t.name === "Stark Coders")?.members}
+              {teams.find((t) => t.name === "Lannister Logic Lords")?.members}
             </div>
           </CardContent>
         </Card>
@@ -334,12 +339,14 @@ useEffect(() => {
                     <SelectContent>
                       <SelectGroup>
                         {[
-                          "Nathan",
-                          "Sophia",
-                          "Caleb",
-                          "Lily",
-                          "Jordan",
-                          "Zoe",
+                          "Logan",
+                          "Harper",
+                          "Owen",
+                          "Ella",
+                          "Jacob",
+                          "Madison",
+                          "Leo",
+                          "Grace",
                         ].map((member) => (
                           <SelectItem key={member} value={member}>
                             {member}
