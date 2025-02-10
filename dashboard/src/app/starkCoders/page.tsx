@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,6 +23,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { AlertTriangle, DollarSign, Users } from "lucide-react";
+import axios from "axios";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const teams = [
   { name: "Stark Coders", members: 10 },
@@ -78,16 +80,55 @@ const teamComparison = [
 export default function Dashboard() {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [selectedMember, setSelectedMember] = useState<string>("");
-  const [selectedRule, setSelectedRule] = useState<string>("");
+  const [selectedRule, setSelectedRule] = useState<{
+    description: string;
+    amount: number;
+  } | null>(null);
+  const [amountTotal, setAmountTotal] = useState(Number)
+  const [totalRuleBreaks, setTotalRuleBreaks] = useState(Number);
+  
+
+
+  const fetchData = async () => {
+    try {
+      const response = await axios.get(
+        "https://fund-json.onrender.com/Stark-Coders"
+      );
+
+      if (Array.isArray(response.data)) {
+        let totalAmount = 0;
+        let ruleFrequency: Record<string, number> = {};
+        let totalRuleBreaks = 0;
+
+        response.data.forEach(({ amount, rule_broken }) => {
+          totalAmount += amount;
+          ruleFrequency[rule_broken] = (ruleFrequency[rule_broken] || 0) + 1;
+        });
+
+        totalRuleBreaks = Object.values(ruleFrequency).reduce(
+          (acc, curr) => acc + curr,
+          0
+        );
+
+        console.log("Total Amount:", totalAmount);
+        console.log("Rule Frequency:", ruleFrequency);
+        setAmountTotal(totalAmount)   
+      setTotalRuleBreaks(totalRuleBreaks)   }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchData()
+  }, [])
+  
 
   const totalViolations = mockViolations.reduce(
     (sum, member) => sum + member.rulesBroken,
     0
   );
-  const totalAmount = mockViolations.reduce(
-    (sum, member) => sum + member.amount,
-    0
-  );
+
 
   const sortedViolations = useMemo(
     () => [...mockViolations].sort((a, b) => a.rulesBroken - b.rulesBroken),
@@ -106,6 +147,27 @@ export default function Dashboard() {
     [teamComparison]
   );
 
+  const postData = {
+    name: selectedMember, // Assuming selectedMember stores the person's name
+    rule_broken: selectedRule?.description || "",
+    amount: selectedRule?.amount || 0,
+    date: date ? format(date, "yyyy-MM-dd") : "", // Formatting date as YYYY-MM-DD
+  };
+
+
+  console.log(postData)
+
+  const handlePost = async () => {
+    try {
+      const post = await axios.post(
+        "https://fund-json.onrender.com/Stark-Coders",
+        postData
+      );
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold mb-6">Stark Coders Dashboard</h1>
@@ -115,12 +177,12 @@ export default function Dashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Total Contribution
+              Total Team Contribution
             </CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalAmount} Taka</div>
+            <div className="text-2xl font-bold">{amountTotal} </div>
           </CardContent>
         </Card>
         <Card>
@@ -131,7 +193,7 @@ export default function Dashboard() {
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalViolations}</div>
+            <div className="text-2xl font-bold">{totalRuleBreaks}</div>
           </CardContent>
         </Card>
         <Card>
@@ -146,35 +208,100 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <Card className="md:col-span-2">
+        {/* Recent Records Card (Left Side) */}
+        <Card>
           <CardHeader>
-            <CardTitle>Violation Calendar</CardTitle>
+            <CardTitle>Recent Records</CardTitle>
           </CardHeader>
           <CardContent>
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={setDate}
-              className="rounded-md border w-full"
-            />
+            <ul className="space-y-3">
+              {/* Replace with dynamic data */}
+              <li className="p-2 border rounded-md">
+                User A - Late Arrival - Feb 9
+              </li>
+              <li className="p-2 border rounded-md">
+                User B - Missed Deadline - Feb 8
+              </li>
+              <li className="p-2 border rounded-md">
+                User C - Unauthorized Leave - Feb 7
+              </li>
+            </ul>
+          </CardContent>
+        </Card>
+
+        {/* Violation Calendar (Right Side) */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Add Record</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center">
+            <div className="w-full max-w-[360px]">
+              <Calendar
+                mode="single"
+                selected={date}
+                onSelect={setDate}
+                className="rounded-md border w-full"
+              />
+            </div>
             <Dialog>
               <DialogTrigger asChild>
                 <Button variant="outline" className="mt-4">
-                  View Violations for {format(date || new Date(), "PP")}
+                  Add Record {format(date || new Date(), "PP")}
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
+              <DialogContent className="sm:max-w-[800px] ">
                 <DialogHeader>
                   <DialogTitle>
                     Violations on {format(date || new Date(), "PP")}
                   </DialogTitle>
                 </DialogHeader>
-                <div className="py-4">
-                  {/* Here you would typically fetch and display violations for the selected date */}
-                  <p>No violations recorded for this date.</p>
+                <div className="py-4 flex gap-6">
+                  <Select onValueChange={(value) => setSelectedMember(value)}>
+                    <SelectTrigger className="w-[250px]">
+                      <SelectValue placeholder="Select Team Member" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Fruits</SelectLabel>
+                        <SelectItem value="Alice">Apple</SelectItem>
+                        <SelectItem value="Bob">Banana</SelectItem>
+                        <SelectItem value="Charlie">Blueberry</SelectItem>
+                        <SelectItem value="David">Grapes</SelectItem>
+                        <SelectItem value="Eve">Pineapple</SelectItem>
+                
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+
+                  <Select
+                    onValueChange={(value) => {
+                      const rule = rules.find(
+                        (rule) => rule.description === value
+                      );
+                      if (rule) {
+                        setSelectedRule({
+                          description: rule.description,
+                          amount: rule.amount,
+                        });
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="w-[470px]">
+                      <SelectValue placeholder="Select Violated Rule" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {rules.map((rule) => (
+                          <SelectItem key={rule.id} value={rule.description}>
+                            {rule.description} (${rule.amount})
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
                 </div>
+                <Button onClick={handlePost}>Add Record</Button>
               </DialogContent>
             </Dialog>
           </CardContent>
