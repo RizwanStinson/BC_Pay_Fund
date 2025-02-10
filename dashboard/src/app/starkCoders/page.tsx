@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,27 +26,8 @@ import {
 import { AlertTriangle, DollarSign, Users } from "lucide-react";
 import axios from "axios";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { IViolation, IFormattedViolation, ITeamComparison } from "@/interfaces/Interface";
 
-// Interfaces for type safety
-interface Violation {
-  id: number;
-  name: string;
-  rule_broken: string;
-  amount: number;
-  date: string;
-}
-
-interface FormattedViolation {
-  member: string;
-  rulesBroken: number;
-  amount: number;
-}
-
-interface TeamComparison {
-  name: string;
-  violations: number;
-  amount: number;
-}
 
 const teams = [
   { name: "Stark Coders", members: 10 },
@@ -70,13 +52,14 @@ const rules = [
   { id: 11, description: "Speaking loudly on phone", amount: 50 },
   { id: 12, description: "Ignoring group messages", amount: 30 },
   { id: 13, description: "Borrowing without permission", amount: 100 },
-  { id: 14, description: "Eating others snacks", amount: 0 },
+  { id: 14, description: "Eating others snacks", amount: 50 },
   { id: 15, description: "Strong-smelling food", amount: 50 },
   { id: 16, description: "Not replacing tissue/toilet paper", amount: 100 },
   { id: 17, description: "Unmuted on video call", amount: 50 },
 ];
 
 export default function Dashboard() {
+  const router = useRouter();
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [selectedMember, setSelectedMember] = useState<string>("");
   const [selectedRule, setSelectedRule] = useState<{
@@ -85,9 +68,10 @@ export default function Dashboard() {
   } | null>(null);
   const [amountTotal, setAmountTotal] = useState<number>(0);
   const [totalRuleBreaks, setTotalRuleBreaks] = useState<number>(0);
-  const [records, setRecords] = useState<Violation[]>([]);
-  const [violations, setViolations] = useState<FormattedViolation[]>([]);
-  const [teamComparison, setTeamComparison] = useState<TeamComparison[]>([]);
+  const [records, setRecords] = useState<IViolation[]>([]);
+  const [violations, setViolations] = useState<IFormattedViolation[]>([]);
+  const [teamComparison, setTeamComparison] = useState<ITeamComparison[]>([]);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const teamUrls = [
     "https://fund-json.onrender.com/Stark-Coders",
@@ -98,7 +82,7 @@ export default function Dashboard() {
     "https://fund-json.onrender.com/Martell-Mavericks",
   ];
 
-  const fetchTeamData = async (url: string): Promise<TeamComparison> => {
+  const fetchTeamData = async (url: string): Promise<ITeamComparison> => {
     try {
       const response = await axios.get(url);
       const data = response.data;
@@ -106,7 +90,7 @@ export default function Dashboard() {
       let violations = 0;
       let totalAmount = 0;
 
-      data.forEach((entry: Violation) => {
+      data.forEach((entry: IViolation) => {
         violations += 1;
         totalAmount += entry.amount;
       });
@@ -158,7 +142,7 @@ export default function Dashboard() {
       setViolations(formattedData);
       
       const sortedRecords = response.data
-        .sort((a: Violation, b: Violation) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .sort((a: IViolation, b: IViolation) => new Date(b.date).getTime() - new Date(a.date).getTime())
         .slice(0, 6);
 
       setRecords(sortedRecords);
@@ -168,7 +152,7 @@ export default function Dashboard() {
         let ruleFrequency: { [key: string]: number } = {};
         let totalRuleBreaks = 0;
 
-        response.data.forEach(({ amount, rule_broken }: Violation) => {
+        response.data.forEach(({ amount, rule_broken }: IViolation) => {
           totalAmount += Number(amount);
           ruleFrequency[rule_broken] = (ruleFrequency[rule_broken] || 0) + 1;
         });
@@ -220,6 +204,7 @@ export default function Dashboard() {
         postData
       );
       fetchData();
+      setIsDialogOpen(false);
     } catch (error) {
       console.error("Error posting data:", error);
     }
@@ -227,7 +212,16 @@ export default function Dashboard() {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6">Stark Coders Dashboard</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold">Stark Coders Dashboard</h1>
+        <Button
+          className="bg-black text-white hover:bg-gray-800"
+          onClick={() => router.push("/login")}
+        >
+          Logout
+        </Button>
+      </div>
+
       <h2 className="text-xl mb-4">{format(new Date(), "MMMM yyyy")}</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -281,7 +275,7 @@ export default function Dashboard() {
                       day: "numeric",
                       year: "numeric",
                     })}{" "}
-                    - ${amount}
+                    - ৳{amount}
                   </li>
                 ))
               ) : (
@@ -306,9 +300,9 @@ export default function Dashboard() {
                 className="rounded-md border w-full"
               />
             </div>
-            <Dialog>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" className="mt-4">
+                <Button variant="default" className="mt-4 bg-black text-white">
                   Add Record {format(date || new Date(), "PP")}
                 </Button>
               </DialogTrigger>
@@ -325,8 +319,18 @@ export default function Dashboard() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
-                        {["Alice", "Bob", "Charlie", "David", "Eve", 
-                          "Frank", "Grace", "Henry", "Ivy", "Jack"].map((member) => (
+                        {[
+                          "Alice",
+                          "Bob",
+                          "Charlie",
+                          "David",
+                          "Eve",
+                          "Frank",
+                          "Grace",
+                          "Henry",
+                          "Ivy",
+                          "Jack",
+                        ].map((member) => (
                           <SelectItem key={member} value={member}>
                             {member}
                           </SelectItem>
@@ -362,7 +366,12 @@ export default function Dashboard() {
                     </SelectContent>
                   </Select>
                 </div>
-                <Button onClick={handlePost}>Add Record</Button>
+                <Button
+                  onClick={handlePost}
+                  disabled={!selectedMember || !selectedRule}
+                >
+                  Add Record
+                </Button>
               </DialogContent>
             </Dialog>
           </CardContent>
@@ -378,7 +387,8 @@ export default function Dashboard() {
             <ul className="space-y-2">
               {violations.map(({ member, rulesBroken, amount }) => (
                 <li key={member} className="p-2 border rounded-md">
-                  {member}: {rulesBroken} rule(s) broken - ${amount} fine
+                  {member}: {rulesBroken} rule(s) broken - ৳{amount}{" "}
+                  contribution
                 </li>
               ))}
             </ul>
@@ -391,11 +401,11 @@ export default function Dashboard() {
           <CardContent>
             <ul className="space-y-2 max-h-96 overflow-y-auto">
               {rules.map((rule) => (
-                  <li key={rule.id} className="flex justify-between">
-                    <span>{rule.description}</span>
-                    <span>{rule.amount} Taka</span>
-                  </li>
-                ))}
+                <li key={rule.id} className="flex justify-between">
+                  <span>{rule.description}</span>
+                  <span>{rule.amount} Taka</span>
+                </li>
+              ))}
             </ul>
           </CardContent>
         </Card>
@@ -453,13 +463,13 @@ export default function Dashboard() {
                 yAxisId="left"
                 dataKey="violationsPerMember"
                 fill="#8884d8"
-                name="Violations per Member"
+                name=" Average Violations per Member"
               />
               <Bar
                 yAxisId="right"
                 dataKey="amountPerMember"
                 fill="#82ca9d"
-                name="Amount per Member (Taka)"
+                name="Average Amount per Member (Taka)"
               />
             </BarChart>
           </ResponsiveContainer>
