@@ -106,96 +106,96 @@ export default function EnhancedCEODashboard() {
     }
   };
 
-  const computeAnalytics = async () => {
-    const teamDataResults = await Promise.all(teamUrls.map(fetchTeamData));
-    const processedData = teamDataResults.filter(Boolean);
+  useEffect(() => {
+    const computeAnalytics = async () => {
+      const teamDataResults = await Promise.all(teamUrls.map(fetchTeamData));
+      const processedData = teamDataResults.filter(Boolean);
 
-    const weeklyRuleBreaks = processedData.map((team) => ({
-      name: team!.url.split("/").pop()?.replace(/-/g, " ") || "",
-      violations: team!.data.length,
-    }));
+      const weeklyRuleBreaks = processedData.map((team) => ({
+        name: team!.url.split("/").pop()?.replace(/-/g, " ") || "",
+        violations: team!.data.length,
+      }));
 
-    const monthlyRuleBreaks = processedData.map((team) => ({
-      name: team!.url.split("/").pop()?.replace(/-/g, " ") || "",
-      violations: team!.monthlyData.length,
-    }));
+      const monthlyRuleBreaks = processedData.map((team) => ({
+        name: team!.url.split("/").pop()?.replace(/-/g, " ") || "",
+        violations: team!.monthlyData.length,
+      }));
 
-    const processRuleBreakers = (data: (Entry & { team: string })[]) => {
-      const ruleBreakersMap = new Map<string, Set<string>>();
-      const amountsMap = new Map<string, number>();
+      const processRuleBreakers = (data: (Entry & { team: string })[]) => {
+        const ruleBreakersMap = new Map<string, Set<string>>();
+        const amountsMap = new Map<string, number>();
 
-      data.forEach((entry) => {
-        if (!ruleBreakersMap.has(entry.name)) {
-          ruleBreakersMap.set(entry.name, new Set());
-          amountsMap.set(entry.name, 0);
-        }
-        ruleBreakersMap.get(entry.name)!.add(entry.rule_broken);
-        amountsMap.set(
-          entry.name,
-          (amountsMap.get(entry.name) || 0) + entry.amount
+        data.forEach((entry) => {
+          if (!ruleBreakersMap.has(entry.name)) {
+            ruleBreakersMap.set(entry.name, new Set());
+            amountsMap.set(entry.name, 0);
+          }
+          ruleBreakersMap.get(entry.name)!.add(entry.rule_broken);
+          amountsMap.set(
+            entry.name,
+            (amountsMap.get(entry.name) || 0) + entry.amount
+          );
+        });
+
+        return Array.from(ruleBreakersMap.entries()).map(([name, rules]) => ({
+          name,
+          team: data.find((entry) => entry.name === name)?.team || "",
+          rulesBroken: rules.size,
+          amount: amountsMap.get(name) || 0,
+        }));
+      };
+
+      const allEntries = processedData.flatMap((team) =>
+        team!.data.map((entry: Entry) => ({
+          ...entry,
+          team: team!.url.split("/").pop()?.replace(/-/g, " ") || "",
+        }))
+      );
+
+      const ruleBreakers = processRuleBreakers(allEntries);
+
+      const topRuleBreakers = ruleBreakers
+        .sort((a, b) => b.rulesBroken - a.rulesBroken || b.amount - a.amount)
+        .slice(0, 5);
+
+      const lowestRuleBreakers = ruleBreakers
+        .sort((a, b) => a.rulesBroken - b.rulesBroken || a.amount - b.amount)
+        .slice(0, 5);
+
+      const teamEfficiencyIndex = processedData.map((team) => {
+        const teamObj = teams.find(
+          (t) => t.name === team!.url.split("/").pop()?.replace(/-/g, " ")
         );
+        return {
+          name: teamObj?.name || "",
+          violations: team!.data.length,
+          amount: team!.data.reduce(
+            (sum: number, entry: Entry) => sum + entry.amount,
+            0
+          ),
+          membersCount: teamObj?.members || 0,
+        };
       });
 
-      return Array.from(ruleBreakersMap.entries()).map(([name, rules]) => ({
-        name,
-        team: data.find((entry) => entry.name === name)?.team || "",
-        rulesBroken: rules.size,
-        amount: amountsMap.get(name) || 0,
-      }));
+      const totalRulesBreak = allEntries.length;
+      const totalContribution = allEntries.reduce(
+        (sum, entry) => sum + entry.amount,
+        0
+      );
+
+      setAnalyticsData({
+        weeklyRuleBreaks,
+        monthlyRuleBreaks,
+        topRuleBreakers,
+        lowestRuleBreakers,
+        teamEfficiencyIndex,
+        totalRulesBreak,
+        totalContribution,
+      });
     };
 
-    const allEntries = processedData.flatMap((team) =>
-      team!.data.map((entry: Entry) => ({
-        ...entry,
-        team: team!.url.split("/").pop()?.replace(/-/g, " ") || "",
-      }))
-    );
-
-    const ruleBreakers = processRuleBreakers(allEntries);
-
-    const topRuleBreakers = ruleBreakers
-      .sort((a, b) => b.rulesBroken - a.rulesBroken || b.amount - a.amount)
-      .slice(0, 5);
-
-    const lowestRuleBreakers = ruleBreakers
-      .sort((a, b) => a.rulesBroken - b.rulesBroken || a.amount - b.amount)
-      .slice(0, 5);
-
-    const teamEfficiencyIndex = processedData.map((team) => {
-      const teamObj = teams.find(
-        (t) => t.name === team!.url.split("/").pop()?.replace(/-/g, " ")
-      );
-      return {
-        name: teamObj?.name || "",
-        violations: team!.data.length,
-        amount: team!.data.reduce(
-          (sum: number, entry: Entry) => sum + entry.amount,
-          0
-        ),
-        membersCount: teamObj?.members || 0,
-      };
-    });
-
-    const totalRulesBreak = allEntries.length;
-    const totalContribution = allEntries.reduce(
-      (sum, entry) => sum + entry.amount,
-      0
-    );
-
-    setAnalyticsData({
-      weeklyRuleBreaks,
-      monthlyRuleBreaks,
-      topRuleBreakers,
-      lowestRuleBreakers,
-      teamEfficiencyIndex,
-      totalRulesBreak,
-      totalContribution,
-    });
-
-  };
-  useEffect(() => {
-    computeAnalytics();
-  }, [teamUrls]); // Added teamUrls as a dependency
+    computeAnalytics(); //  Call the function 
+  }, [teamUrls]); // Dependencies remain unchanged
 
   return (
     <div className="container mx-auto p-4 space-y-6">
