@@ -127,7 +127,7 @@ export default function Dashboard() {
   const fetchData = useCallback(async () => {
     try {
       const response = await axios.get(
-        "https://fund-json.onrender.com/Lannister-Logic-Lords"
+        "https://fund-json.onrender.com/Baratheon-Builders"
       );
       const data = response.data;
       const groupedData: {
@@ -141,19 +141,16 @@ export default function Dashboard() {
         groupedData[name].amount += amount;
       });
 
-      const initialMembers = [
-        "Ethan",
-        "Ava",
-        "James",
-        "Isabella",
-        "Benjamin",
-        "Mia",
-        "Alexander",
-        "Charlotte",
-        "Daniel",
-        "Amelia",
-        "Matthew",
-      ];
+     const initialMembers = [
+       "Liam",
+       "Olivia",
+       "Noah",
+       "Emma",
+       "Mason",
+       "Sophia",
+       "Lucas",
+     ];
+
       const formattedData = initialMembers.map((member) => ({
         member,
         rulesBroken: groupedData[member]?.rulesBroken || 0,
@@ -219,7 +216,7 @@ export default function Dashboard() {
 
     try {
       await axios.post(
-        "https://fund-json.onrender.com/Tyrell-Technocrats",
+        "https://fund-json.onrender.com/Baratheon-Builders",
         postData
       );
       fetchData();
@@ -232,7 +229,7 @@ export default function Dashboard() {
   return (
     <div className="container mx-auto p-4">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Tyrell Technocrats Dashboard</h1>
+        <h1 className="text-3xl font-bold">Baratheon-Builders Dashboard</h1>
         <Button
           className="bg-black text-white hover:bg-gray-800"
           onClick={() => router.push("/login")}
@@ -273,7 +270,7 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {teams.find((t) => t.name === "Lannister Logic Lords")?.members}
+              {teams.find((t) => t.name === "Baratheon Builders")?.members}
             </div>
           </CardContent>
         </Card>
@@ -339,14 +336,13 @@ export default function Dashboard() {
                     <SelectContent>
                       <SelectGroup>
                         {[
-                          "Logan",
-                          "Harper",
-                          "Owen",
-                          "Ella",
-                          "Jacob",
-                          "Madison",
-                          "Leo",
-                          "Grace",
+                          "Liam",
+                          "Olivia",
+                          "Noah",
+                          "Emma",
+                          "Mason",
+                          "Sophia",
+                          "Lucas",
                         ].map((member) => (
                           <SelectItem key={member} value={member}>
                             {member}

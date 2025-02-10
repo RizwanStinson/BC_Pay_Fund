@@ -127,7 +127,7 @@ export default function Dashboard() {
   const fetchData = useCallback(async () => {
     try {
       const response = await axios.get(
-        "https://fund-json.onrender.com/Lannister-Logic-Lords"
+        "https://fund-json.onrender.com/Martell-Mavericks"
       );
       const data = response.data;
       const groupedData: {
@@ -141,19 +141,15 @@ export default function Dashboard() {
         groupedData[name].amount += amount;
       });
 
-      const initialMembers = [
-        "Ethan",
-        "Ava",
-        "James",
-        "Isabella",
-        "Benjamin",
-        "Mia",
-        "Alexander",
-        "Charlotte",
-        "Daniel",
-        "Amelia",
-        "Matthew",
-      ];
+   const initialMembers = [
+     "Nathan",
+     "Lily",
+     "Samuel",
+     "Zoe",
+     "Henry",
+     "Scarlett",
+   ];
+
       const formattedData = initialMembers.map((member) => ({
         member,
         rulesBroken: groupedData[member]?.rulesBroken || 0,
@@ -219,7 +215,7 @@ export default function Dashboard() {
 
     try {
       await axios.post(
-        "https://fund-json.onrender.com/Tyrell-Technocrats",
+        "https://fund-json.onrender.com/Martell-Mavericks",
         postData
       );
       fetchData();
@@ -232,7 +228,7 @@ export default function Dashboard() {
   return (
     <div className="container mx-auto p-4">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Tyrell Technocrats Dashboard</h1>
+        <h1 className="text-3xl font-bold">Martell Mavericks Dashboard</h1>
         <Button
           className="bg-black text-white hover:bg-gray-800"
           onClick={() => router.push("/login")}
@@ -273,7 +269,7 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {teams.find((t) => t.name === "Lannister Logic Lords")?.members}
+              {teams.find((t) => t.name === "Martell Mavericks")?.members}
             </div>
           </CardContent>
         </Card>
@@ -339,14 +335,12 @@ export default function Dashboard() {
                     <SelectContent>
                       <SelectGroup>
                         {[
-                          "Logan",
-                          "Harper",
-                          "Owen",
-                          "Ella",
-                          "Jacob",
-                          "Madison",
-                          "Leo",
-                          "Grace",
+                          "Nathan",
+                          "Lily",
+                          "Samuel",
+                          "Zoe",
+                          "Henry",
+                          "Scarlett",
                         ].map((member) => (
                           <SelectItem key={member} value={member}>
                             {member}

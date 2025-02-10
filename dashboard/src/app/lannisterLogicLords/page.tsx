@@ -219,7 +219,7 @@ export default function Dashboard() {
 
     try {
       await axios.post(
-        "https://fund-json.onrender.com/Tyrell-Technocrats",
+        "https://fund-json.onrender.com/Lannister-Logic-Lords",
         postData
       );
       fetchData();
@@ -232,7 +232,7 @@ export default function Dashboard() {
   return (
     <div className="container mx-auto p-4">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Tyrell Technocrats Dashboard</h1>
+        <h1 className="text-3xl font-bold">Lannister Logic Lords Dashboard</h1>
         <Button
           className="bg-black text-white hover:bg-gray-800"
           onClick={() => router.push("/login")}
@@ -339,14 +339,17 @@ export default function Dashboard() {
                     <SelectContent>
                       <SelectGroup>
                         {[
-                          "Logan",
-                          "Harper",
-                          "Owen",
-                          "Ella",
-                          "Jacob",
-                          "Madison",
-                          "Leo",
-                          "Grace",
+                          "Ethan",
+                          "Ava",
+                          "James",
+                          "Isabella",
+                          "Benjamin",
+                          "Mia",
+                          "Alexander",
+                          "Charlotte",
+                          "Daniel",
+                          "Amelia",
+                          "Matthew",
                         ].map((member) => (
                           <SelectItem key={member} value={member}>
                             {member}
