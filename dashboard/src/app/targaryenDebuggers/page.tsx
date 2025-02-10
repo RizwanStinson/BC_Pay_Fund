@@ -311,7 +311,7 @@ export default function Dashboard() {
             <CardTitle>Add Record</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col items-center">
-            <div className="w-full max-w-[360px]">
+            <div className="w-full max-w-[560px]">
               <Calendar
                 mode="single"
                 selected={date}
