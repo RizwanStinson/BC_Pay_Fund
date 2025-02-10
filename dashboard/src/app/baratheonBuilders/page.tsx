@@ -199,7 +199,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   const violationsPerMember = useMemo(
     () =>
